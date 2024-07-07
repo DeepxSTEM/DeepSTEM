@@ -1,6 +1,10 @@
 # Standalone Simple RAG Example
 
-This is a simple standalone implementation showing a minimal RAG application that can run with local free small LLMs or big free or paid LLMs on the cloud. 
+This is a simple standalone end-to-end LLM project showing a minimal RAG application that is ready to run with local free small LLMs or big (free or paid) LLMs on the cloud. 
+Note: this RAG application only works with PDF files that do not have texts in image format. For the simple demonstration purpose I did not go into scenario of texts in image format. A future update may look into including PDF file with image texts.
+
+Acknowledgement: This RAG application is adapted from the pixegami RAG tutorial channel:
+Link: https://github.com/pixegami/rag-tutorial-v2
 
 ### Setup Steps
 
@@ -25,10 +29,7 @@ This is a simple standalone implementation showing a minimal RAG application tha
    pip install -r requirements.txt
    ```
 
-4. If you want to use Google LLM or mistralai/mixtral-8x7b-instruct-v0.1, add your Google API key or 
-   Nvidia API key to the .env file:
-
-   Refer to [Get an API Key for the Mixtral 8x7B Instruct API Endpoint](https://nvidia.github.io/GenerativeAIExamples/latest/api-catalog.html#get-an-api-key-for-the-mixtral-8x7b-instruct-api-endpoint)
+4. Refer to [Get an API Key for the Mixtral 8x7B Instruct API Endpoint](https://nvidia.github.io/GenerativeAIExamples/latest/api-catalog.html#get-an-api-key-for-the-mixtral-8x7b-instruct-api-endpoint)
    for information about how to get an NVIDIA API key.
 
    ```.env file
@@ -42,13 +43,20 @@ This is a simple standalone implementation showing a minimal RAG application tha
    Click 'Models' and find the model your computer can handle then issue the following command to download the model to your computer.
    ollama pull model_name (e.g., Ollama pull mistral)
 
-6. Run the example using Streamlit:
+6. If you want to use Google Gemini LLM, OpenAI LLM or Nvidia-mistralai/mixtral-8x7b-instruct-v0.1, 
+   add your Google API key, OpenAI API key or Nvidia API key to the .env file, then uncomment those LLMs that you want to send your query to.
+
+7. Run the example using Streamlit:
 
    ```console
    streamlit run Hybrid_RAG.py
    ```
 
-7. Test the deployed example by going to `http://localhost:8501` in a web browser.
-   Enter your question then hit Enter to test the model
+8. Test the deployed example by going to `http://localhost:8501` in a web browser, if it does not 
+   automatically launched.
+   
+   (A): Click the 'Browser files' button to select your PDF files then click the 'Upload' button
+        to upload your PDF files.
+   (B): Enter your question/query then hit Enter to start chating with the AI Assistant
 
 You are all set now! Try out queries related to the knowledge base using text from the user interface.

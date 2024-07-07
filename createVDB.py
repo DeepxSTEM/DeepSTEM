@@ -6,10 +6,11 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from load_pdf import load_pdf
 from get_embedding_func import get_embedding_function
 import hashlib
+import streamlit as st
 
-CHROMA_PATH = "vdb"
-chunk_size = 800
-chunk_overlap = 50
+vectorDB_PATH = "vdb"
+chunk_size = 1000
+chunk_overlap = 100
 embedding = "hf"
 
 def split_docs(documents: list[Document]):
@@ -25,7 +26,7 @@ def split_docs(documents: list[Document]):
 def add_to_chroma(chunks: list[Document]):
     # Load the existing database.
     db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function(embedding)
+        persist_directory=vectorDB_PATH, embedding_function=get_embedding_function(embedding)
     )
 
     # Check if chunk already exist or not. If not, add to vector database.
@@ -34,10 +35,12 @@ def add_to_chroma(chunks: list[Document]):
     
     if len(existing_items['ids']) > 0:
         existing_ids = existing_items["ids"]
-        print(f"Number of existing documents in DB: {len(existing_ids)}")
+        with st.sidebar:
+            st.write(f"Number of existing documents in DB: {len(existing_ids)}")
 
     else:
-        print("NO existing items in database")
+        with st.sidebar:
+            st.write("NO existing items in database")
 
     # Only add documents that don't exist in the DB.
     new_chunks = []
@@ -61,22 +64,24 @@ def add_to_chroma(chunks: list[Document]):
             chunk.metadata["id"] = chunk_id
 
     if len(new_chunks):
-        print(f"👉 Adding new documents: {len(new_chunks)}")
-        new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
-        db.add_documents(new_chunks, ids=new_chunk_ids)
+        with st.sidebar:
+            new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
+            db.add_documents(new_chunks, ids=new_chunk_ids)
+            st.write(f"✅ Added new documents: {len(new_chunks)}")
         
     else:
-        print("✅ No new documents to add")
+        with st.sidebar:
+            st.write("👉 No new documents added")
 
-def main():
+def createDB():
     docs = load_pdf()
     docs = split_docs(docs)
 
     db = Chroma(
-                persist_directory=CHROMA_PATH, embedding_function=get_embedding_function(embedding)
+                persist_directory=vectorDB_PATH, embedding_function=get_embedding_function(embedding)
             )
     #add documents to vector database
     add_to_chroma(docs)
 
 if __name__=="__main__":
-    main()
+    createDB()
