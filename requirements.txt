@@ -10,7 +10,6 @@ langchain-text-splitters==0.2.0
 markdown-it-py==3.0.0
 pypdf==4.2.0
 python-dotenv==1.0.1
-rapidocr-onnxruntime==1.2.3
 sentence-transformers==2.7.0
 streamlit==1.33.0
 tiktoken==0.6.0
