@@ -18,10 +18,15 @@ Link: https://github.com/pixegami/rag-tutorial-v2
 
 2. Create a python virtual environment and activate it:
 
-   ```comsole - Replace "env_name" with your desired environment name.
+   ```Comsole - For Windows: replace "env_name" with your desired environment name.
    python -m venv env_name
    env_name\Scripts\activate
    ```
+
+   ```Comsole - For Mac: replace "env_name" with your desired environment name.
+   python3 -m venv myenv
+   source myenv/bin/activate
+   '''
 
 3. Nevigate to the root repository, `DeepSTEM`, install the requirements:
 
