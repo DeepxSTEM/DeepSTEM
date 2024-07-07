@@ -60,7 +60,7 @@ def add_to_chroma(chunks: list[Document]):
             new_chunks.append(chunk)
             chunk_id = hash_chunk
 
-            # Add it to the page meta-data.
+            # Add hash value as chunk id to the page meta-data.
             chunk.metadata["id"] = chunk_id
 
     if len(new_chunks):
