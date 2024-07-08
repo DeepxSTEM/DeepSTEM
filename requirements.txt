@@ -14,7 +14,7 @@ pypdf==4.2.0
 python-dotenv==1.0.1
 sentence-transformers==2.7.0
 streamlit==1.33.0
-tiktoken==0.6.0
+tiktoken
 tokenizers==0.19.1
 unstructured[all-docs]==0.11.2
 unstructured-client==0.22.0
