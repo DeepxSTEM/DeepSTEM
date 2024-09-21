@@ -8,9 +8,9 @@ from get_embedding_func import get_embedding_function
 import hashlib
 import streamlit as st
 
-vectorDB_PATH = "vdb"
-chunk_size = 1000
-chunk_overlap = 100
+vectorDB_PATH = "vdb1-5k"
+chunk_size = 1500
+chunk_overlap = 50
 embedding = "hf"
 
 def split_docs(documents: list[Document]):

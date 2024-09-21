@@ -1,6 +1,3 @@
-__import__('pysqlite3')
-import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 from langchain_google_genai import GoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -11,8 +8,10 @@ from langchain_community.llms.ollama import Ollama
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from langchain.retrievers.multi_query import MultiQueryRetriever
 import os
 import streamlit as st
+from langchain_nvidia_ai_endpoints import ChatNVIDIA, NVIDIAEmbeddings
 
 # Import load PDF function and embedding function
 from load_pdf import load_pdf
@@ -23,7 +22,7 @@ from dotenv import load_dotenv
 # take environment variables from .env
 load_dotenv()  
 
-vectorDB_PATH = "vdb"
+vectorDB_PATH = "imgvdb"
 PDF_path = "./pdf_files"
 embedding_model = "hf"
 
@@ -50,14 +49,17 @@ OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
 # Local LLMs
 Mllm = Ollama(temperature=0, model="mistral")
+MLllm = Ollama(temperature=0, model="mistral-large")
 L2llm = Ollama(temperature=0, model="llama2")
+L3llm = Ollama(temperature=0, model="llama3.1:8b")
 Gllm = Ollama(temperature=0, model="gemma:7b")
 
 # Add the API keys of the following LLMs to the .env file if you want
 # to use any of these on the clound LLMs then uncomment the ones you want to use
-Geminillm = GoogleGenerativeAI(temperature=0, model="models/gemini-1.5-pro-latest", google_api_key=os.getenv('GOOGLE_API_KEY'))
+GGllm = GoogleGenerativeAI(temperature=0, model="models/gemini-1.5-pro-latest", google_api_key=os.getenv('GOOGLE_API_KEY'))
 #OAIllm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613")
-#NVllm = ChatNVIDIA(model="mistralai/mixtral-8x7b-instruct-v0.1")
+#NVllm = ChatNVIDIA(model="meta/llama3-70b-instruct")
+
 
 PROMPT_TEMPLATE = """
 Read the context from the provided text carefully. 
@@ -94,6 +96,7 @@ def print_chunks(results):
     if results:
         for x in results:
             st.markdown(f'\nChunk {j}: {x}\n', unsafe_allow_html=True)
+            #st.write(f'Chunk size: {len(x.page_content)}')
             j += 1
 
 # This function finds 2 chunk ids of the 2/4 chunks that contains
@@ -134,7 +137,8 @@ def check_score(results):
 
 def call_lead_llm(prompt):
     response = Mllm.invoke(prompt)
-
+    #response = L3llm.invoke(prompt)
+    st.write(f'Response: {response}')
     chunk_ids = find_chunk_id(response)
     
     if chunk_ids:
@@ -149,22 +153,23 @@ def call_llms(prompt2):
 
         st.subheader("LLMs Response:")
         
-        response1 = Gllm.invoke(prompt2)
-        st.write(f'Gemma:7b: {response1} \n')
+        response1 = GGllm.invoke(prompt2)
+        st.write(f'Gemini: {response1} \n')
+        #st.write(f'Gemma:7b: {response1} \n')
 
-        response2 = Mllm.invoke(prompt2)
+        response3 = L3llm.invoke(prompt2)
+        st.write(f'\nLallma3: {response3}')
+
+        response2 = MLllm.invoke(prompt2)
         st.write(f'\nMistral: {response2} \n')
-
-        response3 = L2llm.invoke(prompt2)
-        st.write(f'\nLallma2: {response3}')
 
         # To use any of the following on the clound LLMs, uncomment the ones you want to use
 
-        response4 = Geminillm.invoke(prompt2)
-        st.write(f'gemini-1.5-pro-latest: {response4} \n')
+        #response4 = Geminillm.invoke(prompt2)
+        #st.write(f'gemini-1.5-pro-latest: {response4} \n')
 
-        #response5 = NVllm.invoke(prompt2)
-        #st.write(f'\nmistralai/mixtral-8x7b-instruct-v0.1: {response5}')
+        response5 = L3llm.invoke(prompt2)
+        st.write(f'\nLlama3.1:8b: {response5}')
 
         #response6 = OAIllm.invoke(prompt2)
         #st.write(f'\nOpenAI gpt-3.5-turbo-0613: {response6}')
@@ -187,12 +192,21 @@ with st.sidebar:
         createDB()
 
 st.header("Let's Chat with AI Assistant DeepSTEM")
-
-query_text = st.text_input(label="Query Text", placeholder="Enter your Query here:", label_visibility="collapsed")
+st.subheader("After entering your query, Press CTRL + Enter")
+#query_text = st.text_input(label="Query Text", placeholder="Enter your Query here:", label_visibility="collapsed")
+query_text = st.text_area(label="Query Text", placeholder="Enter your Query here:", label_visibility="collapsed")
 if query_text:
     
+    retriever_from_llm = MultiQueryRetriever.from_llm (
+        retriever=retriever, llm=L2llm
+    )
+    #results = retriever_from_llm.invoke(query_text)
+
     results = db.similarity_search_by_vector(get_embedding_function(embedding_model).embed_query(query_text), k=4)
-    
+    #results = db.similarity_search_with_score(query_text)
+    #get_score(results)
+    #print_chunks(vsresults)
+
     prompt = prompt_template.format(context=results, question=query_text)
     
     call_lead_llm(prompt)
